@@ -21,3 +21,12 @@ use modify instead of create to change existing.
 
 
 *** To understand balancing check Priority group first
+
+		tmsh show /ltm persistence persist-records all-properties
+		
+
+*** irules can redirect to different pools. This is not doable in cli or gui. irules only.
+*** irules are whitespace sensitive. 
+
+##logs
+		/var/log/ltm
