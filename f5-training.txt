@@ -1,17 +1,23 @@
 ## config is in the config folder
 
-/config/bigip.conf 
+		/config/bigip.conf 
 
 
 ## restore from backup
 
-tmsh load sys ucs /shared/tmp/Train2_module2b.ucs
+		tmsh load sys ucs /shared/tmp/Train2_module2b.ucs
 
 ## show vitrual server details
 
-tmsh show /ltm virtual ssh_vs
+		tmsh show /ltm virtual ssh_vs
 
-create /ltm pool ssh_pool load-balancing-mode round-robin members add { 172.16.20.1:22 172.16.20.2:22 172.16.20.3:22 }
-create /ltm virtual ssh_vs destination 10.10.2.100:22 pool ssh_pool profiles add { tcp }
+		create /ltm pool ssh_pool load-balancing-mode round-robin members add { 172.16.20.1:22 172.16.20.2:22 172.16.20.3:22 }
+		create /ltm virtual ssh_vs destination 10.10.2.100:22 pool ssh_pool profiles add { tcp }
 
 use modify instead of create to change existing.
+
+*** anychanges saved outside /config will be removed when the next hotfix comes out
+*** This is beacuse a hotfix is a whole new volume
+
+
+*** To understand balancing check Priority group first
