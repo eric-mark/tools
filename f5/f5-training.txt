@@ -30,3 +30,11 @@ use modify instead of create to change existing.
 
 ##logs
 		/var/log/ltm
+
+		tmsh show ltm monitor https configltm_https_monitor
+
+		/log/eav                 for monitoring scripts  
+
+*** scripts need to exit with no std out. any exit code out std out is a success to the F5.
+
+  		tmsh show ltm monitor https configltm_https_monitor
