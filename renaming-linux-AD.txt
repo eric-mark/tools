@@ -1,0 +1,116 @@
+
+Renaming:    stg-cms-aem62-web -> stg-aem62-web
+
+
+cp /etc/sysconfig/network /etc/sysconfig/network.bak.$$
+cp /etc/hosts /etc/hosts.bak.$$
+
+
+vi /etc/sysconfig/network                #  Change HOSTNAME to stg-aem62-web
+vi /etc/hosts    # Change hostname
+
+shutdown -ry 0
+
+# Delete stg-cms-aem62 in AD
+Powershell:  Remove-ADComputer -Identity "stg-cms-aem62-web"
+
+# Rename stg-cms-aem62 in VMWARE
+Powershell:  set-vm stg-cms-aem62-web -name 'stg-aem62-web' -confirm:$false
+
+# Update DNS:
+Powershell:   Remove-DnsServerResourceRecord -ZoneName "lululemoninternal.com" -RRType "A" -Name "stg-cms-aem62-web"  -ComputerName lyn-dc-02  -RecordData "10.154.64.65"
+Powershell:   Add-DnsServerResourceRecordA -ZoneName lululemoninternal.com  -IPv4Address 10.154.64.65 -CreatePtr:$true -ComputerName lyn-dc-02 -Name stg-aem62-web
+
+# verify
+nslookup stg-aem62-web        # May take 3-5 minutes to propogate.
+
+
+# Start VM
+PS:  Start-VM -VM stg-aem62-web -RunAsync
+
+
+# login to host as systems, sudo to root.
+ssh systems@stg-aem62-web
+
+
+cd /var/tmp
+
+# Create puppet-keytab.sh
+cat  > /var/tmp/puppet-keytab.sh
+#!/bin/bash
+#This is a cutdown version of the excellent script Peter Pickford wrote.
+#It is intended to be run through puppet, and will facillitate the automatic joining of a computer to Active Directory
+
+svckeytab=$1
+adsite=$2
+ou=$3
+kerberos=$4
+
+
+host=$(hostname)
+host=${host%%.*}
+newhost=${host}
+
+
+
+#must have date synced
+ntpdate -u ntp1.lululemoninternal.com
+
+kinit $(basename ${svckeytab:?} .keytab)@${kerberos:?} -k -t  ${svckeytab:?}
+/bin/rm -f  ${svckeytab:?}
+
+msktutil --precreate -b "${ou:?}" --site ${adsite:?} -h ${newhost:?} --computer-name ${newhost:?} --upn host/${newhost:?}.${kerberos,,}
+sleep 20
+msktutil -c -b "${ou:?}" --site ${adsite:?} -h ${newhost:?} --computer-name ${newhost:?} --upn host/${newhost:?}.${kerberos,,}
+
+
+kinit -k
+for ((i=0;i<12 && $?!=0;i++))
+do
+
+        sleep 5
+        kinit -k
+done
+
+^d
+
+
+chmod u+x ./puppet-keytab.sh
+ 
+mv /etc/krb5.keytab /etc/krb5.keytab.bak.$$
+
+/usr/bin/curl -fk -o ./svc-linjoin.keytab -u rhnsatpriv:1OL37zibMQfc5LTAgVE3 https://lyn-rhnsat-01.lululemoninternal.com/priv/LULULEMONINTERNAL.COM/svc-linjoin.keytab
+
+
+./puppet-keytab.sh svc-linjoin.keytab "US-IDC-LithiaSprings" "OU=Linux,OU=Lululemon Servers" LULULEMONINTERNAL.COM
+ 
+ 
+service sssd stop
+
+rm /var/lib/sss/db/*
+
+service sssd start
+chkconfig nscd off     # nscd and sssd don't play well together.  Disable!
+service nscd stop
+
+
+#Rename Puppet profile with symbolic link.
+
+[root@lit-puppet-01 /]# cd /etc/puppet/hiera/nodes
+
+[root@lit-puppet-01 /]# ln -s stg-cms-aem62-web.lululemoninternal.com.yaml stg-aem62-web.lululemoninternal.com.yaml
+
+
+#Do a puppet run to establish sanity
+
+puppet agent -t -v
+
+
+
+
+# test login with AD user account.
+
+
+shutdown -ry 0
+
+# test login with AD user account.
