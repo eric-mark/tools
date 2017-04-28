@@ -1,0 +1,33 @@
+
+
+--- vgextend  volume group
+
+# Non-interactive format:
+ 
+echo -e "o\nn\np\n1\nt\n8e\n\nw" | fdisk /dev/sdb
+ 
+# Extend VG, disable swap, grow swap, format swap, enable swap.
+[root@stg-ctl-db-04 ~]# vgextend vg_01 /dev/sdb1
+[root@stg-ctl-db-04 ~]# swapoff -v /dev/mapper/vg_01-lv_swap
+[root@stg-ctl-db-04 ~]# lvextend -L 8G /dev/vg_01/lv_swap
+[root@stg-ctl-db-04 ~]# mkswap /dev/mapper/vg_01-lv_swap
+[root@stg-ctl-db-04 ~]# swapon -va
+[root@stg-ctl-db-04 ~]# swapon -s
+    Filename                                Type            Size    Used    Priority
+    /dev/dm-1                               partition       8388600 0       -1
+
+
+--- swap and volume sapce 
+
+# How much swap is there now?
+[root@stg-ctl-db-04 ~]#  swapon -s | awk '/partition/{print $3/1024}'
+ 
+ 
+# Is there free space in VG, or do we need to add more disk?
+[root@stg-ctl-db-04 ~]# vgs
+ 
+# Let's add a disk with powershell!
+prod-infra-01 PS C:\>  New-HardDisk -VM stg-ctl-db-04   -Server lit-vcenter-01  -CapacityKB 4194304 -Persistence persistent -StorageFormat Thick
+
+
+
