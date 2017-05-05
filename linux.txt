@@ -16,6 +16,21 @@ echo -e "o\nn\np\n1\nt\n8e\n\nw" | fdisk /dev/sdb
     Filename                                Type            Size    Used    Priority
     /dev/dm-1                               partition       8388600 0       -1
 
+--- Creating a new LVM on a local disk
+
+fdisk -l 
+echo -e "o\nn\np\n1\nt\n8e\n\nw" | fdisk /dev/sdb
+pvcreate /dev/sdb1
+vgcreate vg_02 /dev/sdb1
+vgs
+lvcreate -L 95G -n lv_opt vg_02
+lvdisplay
+mkfs -t ext4 /dev/vg_02/lv_opt
+mkdir /opt/FOLDER
+vi /etc/fstab
+       /dev/mapper/vg_02-lv_opt                /opt/FOLDER    ext4    defaults           1 2
+mount -a
+
 
 --- swap and volume sapce 
 
