@@ -44,5 +44,16 @@ mount -a
 # Let's add a disk with powershell!
 prod-infra-01 PS C:\>  New-HardDisk -VM stg-ctl-db-04   -Server lit-vcenter-01  -CapacityKB 4194304 -Persistence persistent -StorageFormat Thick
 
+--- Searching Subnets for IP's & hosts
+#!/bin/bash
+
+SUBNET=$1
+
+echo "IP Address,Hostname,Status" > subnet_${SUBNET}_24_SCAN.csv
+
+nmap -v -sP -oG - ${SUBNET}/24 | grep -E '(Up|Down)' | sed 's/Up/Used/g'| sed 's/Down/Available/g' | awk '{print $2","$3","$5}' | tr -d '()' >> subnet_${SUBNET}_24_SCAN.csv
+
+diff -a --suppress-common-lines -y subnet_${SUBNET}_24_SCAN.csv subnet_${SUBNET}_24_IPAM.csv
+
 
 
