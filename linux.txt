@@ -1,5 +1,7 @@
 
 
+
+
 --- vgextend  volume group
 
 # Non-interactive format: this is for ADDING a new disk to the vgroup
@@ -16,7 +18,12 @@ echo -e "o\nn\np\n1\nt\n8e\n\nw" | fdisk /dev/sdb
     Filename                                Type            Size    Used    Priority
     /dev/dm-1                               partition       8388600 0       -1
 
---- Creating a new LVM on a local disk
+
+
+
+
+
+--- Creating a new NEW on a local disk
 
 fdisk -l 
 echo -e "o\nn\np\n1\nt\n8e\n\nw" | fdisk /dev/sdb
@@ -32,6 +39,25 @@ vi /etc/fstab
 mount -a
 
 
+
+
+
+
+--- Resizing an LVM and Partiion - Increasing an existing DISCS physical size.
+
+fdisk /dev/sdc
+-Delete existing partion, create new partion starting from exactly the same sector
+then REBOOT
+pvresize /dev/sdc1
+lvextend -L +5G /dev/mapper/vg_03-lv_infadata
+resize2fs /dev/vg_03/lv_infadata  (possibly require e2fsck -f '/dev/vg_03/lv_infadata')
+
+
+
+
+
+
+
 --- swap and volume sapce 
 
 # How much swap is there now?
@@ -43,6 +69,11 @@ mount -a
  
 # Let's add a disk with powershell!
 prod-infra-01 PS C:\>  New-HardDisk -VM stg-ctl-db-04   -Server lit-vcenter-01  -CapacityKB 4194304 -Persistence persistent -StorageFormat Thick
+
+
+
+
+
 
 --- Searching Subnets for IP's & hosts
 #!/bin/bash
