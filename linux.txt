@@ -2,7 +2,7 @@
 
 --- vgextend  volume group
 
-# Non-interactive format:
+# Non-interactive format: this is for ADDING a new disk to the vgroup
  
 echo -e "o\nn\np\n1\nt\n8e\n\nw" | fdisk /dev/sdb
  
