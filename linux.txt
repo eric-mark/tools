@@ -1,7 +1,6 @@
 
 
 
-
 --- vgextend  volume group
 
 # Non-interactive format: this is for ADDING a new disk to the vgroup
@@ -19,6 +18,16 @@ echo -e "o\nn\np\n1\nt\n8e\n\nw" | fdisk /dev/sdb
     /dev/dm-1                               partition       8388600 0       -1
 
 
+--- gvextend volume group  - TESTED
+
+fdisk /dev/sdb  (this being the new disc I added in vmware)
+pvcreate /dev/sdb1 
+vgdisplay
+vgextend vg_01 /dev/sdb1  (this added physical volume to group)
+pvscan
+lvdisplay
+lvextend /dev/vg_01/lv_tmp /dev/sdb1 (this consumed entire disc)
+resize2fs /dev/vg_01/lv_tmp
 
 
 
