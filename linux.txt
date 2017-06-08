@@ -97,3 +97,9 @@ diff -a --suppress-common-lines -y subnet_${SUBNET}_24_SCAN.csv subnet_${SUBNET}
 
 
 
+
+
+--- SSH keys
+
+ssh-keygen -t rsa
+cat ~/.ssh/id_rsa.pub | ssh oracle@prod-plm-db-01 "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
