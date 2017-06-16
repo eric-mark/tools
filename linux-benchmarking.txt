@@ -10,4 +10,6 @@ openssl speed
 ## Number Crunching
 sysbench --test=cpu --num-threads=16 --cpu-max-prime=80000 run
 
+## Disk Speed - iowait is kernel Parameter, svctm is a service such as the disc
+iostat -xtc
 
