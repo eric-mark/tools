@@ -1,0 +1,7 @@
+##running an ad-hoc command against a list of servers
+
+ansible all --inventory-file=./hosts_prod  -a "/sbin/reboot" -f 10 -s -K
+
+## Running a playbook
+
+ansible-playbook -K -i hosts_prod plm-pbook.yaml
