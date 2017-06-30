@@ -18,6 +18,8 @@ echo -e "o\nn\np\n1\nt\n8e\n\nw" | fdisk /dev/sdb
     /dev/dm-1                               partition       8388600 0       -1
 
 
+
+
 --- gvextend volume group  - TESTED
 
 fdisk /dev/sdb  (this being the new disc I added in vmware)
@@ -28,6 +30,8 @@ pvscan
 lvdisplay
 lvextend /dev/vg_01/lv_tmp /dev/sdb1 (this consumed entire disc)
 resize2fs /dev/vg_01/lv_tmp
+
+
 
 
 
@@ -103,3 +107,11 @@ diff -a --suppress-common-lines -y subnet_${SUBNET}_24_SCAN.csv subnet_${SUBNET}
 
 ssh-keygen -t rsa
 cat ~/.ssh/id_rsa.pub | ssh oracle@prod-plm-db-01 "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
+
+
+
+
+--- Process handling
+
+## 
+ps --sort -rss -eo pid,pmem,rss,vsz,comm | head -5
