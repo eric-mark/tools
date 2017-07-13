@@ -30,3 +30,8 @@ use modify instead of create to change existing.
 
 ##logs
 		/var/log/ltm
+
+
+*** Get to command line
+
+                run util bash
