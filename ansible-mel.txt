@@ -1,0 +1,65 @@
+# Deploying Weblogic 12c
+This is an Ansible script that will deploy Weblogic 12c binaries.
+
+Just clone the repository and execute the scripts.  Example commands are below.
+`$ git clone git://prod-git-02.lululemoninternal.com/opt/git/weblogic-12c.git`
+
+Dependencies of course would include Ansible for running this script.  The simplest install is from Github.
+#### Install Ansible from source (alternate install through pip is possible)
+`$ git clone git://github.com/ansible/ansible.git --recursive`
+`$ cd ./ansible`
+`$ source ./hacking/env-setup`
+
+### Add the host you want to deploy to the hosts file
+`vi hosts-prod`
+`vi hosts-stg`
+`vi hosts-qa`
+`vi hosts-dev`
+
+### Add a host file for the new server you want to deploy to
+Make a copy of an exiting host var file and name it the same as your server.  This extra-var target variable is used to reference the same file.
+`host_vars/[server name].yml`
+
+### Syntax check
+`ansible-playbook --syntax-check --list-task -i hosts-dev main.yml --limit='dev-oms-rpt-01'`
+
+### Dry run
+`ansible-playbook --list-task -i hosts-stg main.yml --limit='prod-oms-rpt-01'`
+
+### Execute install
+# Install binaries
+ansible-playbook -i hosts-stg --limit='oms02' --user=systems --ask-pass --ask-sudo-pass -vv binaries.yml
+# Create the domain with config.sh, then run the domain YML
+ansible-playbook -i hosts-stg --limit='oms02' --user=systems --ask-pass --ask-sudo-pass -vv domain.yml
+# Run scripts installed by domain YML
+# Setup nodemanager
+ansible-playbook -i hosts-stg --limit='oms02' --user=systems --ask-pass --ask-sudo-pass -vv --ask-vault-pass nodemanager.yml
+
+
+#### Target install to a group of servers, defined in host inventory file
+ansible-playbook -i hosts-prod main.yml --limit='jms' --extra-vars='datacentre=lynnwood' --skip-tags 'uninstall' --user=systems --ask-pass --ask-sudo-pass --ask-vault-pass -vv
+
+# Note: vault password is the JKS keystore password
+# If you don't specify skip tags uninstall, it will automatically uninstall Weblogic right after installation is complete
+
+### Execute uninstall
+ansible-playbook -i hosts-stg main.yml --limit='stg-jms-01' --extra-vars='datacentre=lithia' --tags 'uninstall' --user=systems --ask-pass --ask-sudo-pass
+
+
+#------------------
+# Tips
+#------------------
+#1. List all available tasks and tags:
+ansible-playbook --list-task -i hosts-stg --limit='omnidash01'  --extra-vars='domain_admin_password=xxxxxxxxxxxxx ldap_user_pass=xxxxxxxxxxxxxxx jks_identitystore_pass=xxxxxxxxxxxxxxxxxxxxx jks_truststore_pass=xxxxxxxxxxxxxxxxxx' --user=jchen_c --ask-pass --ask-sudo-pass --vault-password-file ~/.vault_pass.txt main.yml
+
+#2. Run a single task - control-c to exit for the next task.
+ansible-playbook -i hosts-stg --limit='omnidash01'  --extra-vars='domain_admin_password=xxxxxxxxxxxxx ldap_user_pass=xxxxxxxxxxxxxxx jks_identitystore_pass=xxxxxxxxxxxxxxxxxxxxx jks_truststore_pass=xxxxxxxxxxxxxxxxxx' --user=jchen_c --ask-pass --ask-sudo-pass --vault-password-file ~/.vault_pass.txt main.yml --step --start-at-task='task_name'
+
+#3.Run tasks start with last failed point:
+ansible-playbook -i hosts-stg --limit='omnidash01'  --extra-vars='domain_admin_password=xxxxxxxxxxxxx ldap_user_pass=xxxxxxxxxxxxxxx jks_identitystore_pass=xxxxxxxxxxxxxxxxxxxxx jks_truststore_pass=xxxxxxxxxxxxxxxxxx' --user=jchen_c --ask-pass --ask-sudo-pass --vault-password-file ~/.vault_pass.txt main.yml --start-at-task='task_name'
+
+#4. Run all tasks
+ansible-playbook -i hosts-stg --limit='omnidash01'  --extra-vars='domain_admin_password=xxxxxxxxxxxxx ldap_user_pass=xxxxxxxxxxxxxxx jks_identitystore_pass=xxxxxxxxxxxxxxxxxxxxx jks_truststore_pass=xxxxxxxxxxxxxxxxxx' --user=jchen_c --ask-pass --ask-sudo-pass --vault-password-file ~/.vault_pass.txt main.yml
+
+#5. Run tasks applied to all hosts( binaries and domin in NFS shared folders )
+ansible-playbook --tags=allhosts -i hosts-stg --limit='omnidash01'  --extra-vars='domain_admin_password=xxxxxxxxxxxxx ldap_user_pass=xxxxxxxxxxxxxxx jks_identitystore_pass=xxxxxxxxxxxxxxxxxxxxx jks_truststore_pass=xxxxxxxxxxxxxxxxxx' --user=jchen_c --ask-pass --ask-sudo-pass --vault-password-file ~/.vault_pass.txt main.yml
