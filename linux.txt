@@ -115,3 +115,12 @@ cat ~/.ssh/id_rsa.pub | ssh oracle@prod-plm-db-01 "mkdir -p ~/.ssh && cat >>  ~/
 
 ## 
 ps --sort -rss -eo pid,pmem,rss,vsz,comm | head -5
+
+
+---
+
+Downgrading a group of yum packages
+yum list installed | awk '/beta-rpms/ { print $1 }' | xargs yum downgrade
+
+
+
