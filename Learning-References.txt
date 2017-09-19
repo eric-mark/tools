@@ -1,0 +1,6 @@
+
+PowerShell
+https://www.manning.com/books/learn-windows-powershell-in-a-month-of-lunches-third-edition
+
+FreeIPA
+http://www.freeipa.org/page/Demo
